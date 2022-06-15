@@ -1,6 +1,8 @@
 import { join } from 'path';
 import { platform } from 'os';
 
+import semver from 'semver';
+
 import { ConsoleAuthOptions } from '../utils';
 
 interface Hidden {
@@ -138,8 +140,15 @@ export const testParams: TestParams = {
     ],
   },
 };
+
+// Set the region
 if (testParams.config.region) {
   testParams.config.regionFlag.push('--region', testParams.config.region);
+}
+
+// Overwrite flexUIVersion
+if (process.env.FLEX_UI_VERSION && semver.valid(process.env.FLEX_UI_VERSION)) {
+  testParams.scenario.flexUIVersion = process.env.FLEX_UI_VERSION as string;
 }
 
 // All test scenarios to run
