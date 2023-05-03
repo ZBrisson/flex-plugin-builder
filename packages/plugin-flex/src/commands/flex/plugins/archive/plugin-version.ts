@@ -24,18 +24,27 @@ export default class FlexPluginsArchivePluginVersion extends ArchiveResource<Plu
     }),
   };
 
+  // @ts-ignore
+  public _flags: OutputFlags<typeof FlexPluginsArchivePluginVersion.flags>;
+
+  async init(): Promise<void> {
+    this._flags = (await this.parseCommand(FlexPluginsArchivePluginVersion)).flags;
+  }
+
   /**
    * @override
    */
   async doArchive(): Promise<PluginVersion> {
-    const pluginVersion = await progress('Archiving Flex Plugin Version', async () => this.archiveOnPluginsAPI());
-    await progress('Cleaning up Twilio Assets', async () => {
-      const build = await this.getBuildIfActive();
-      if (!build) {
-        throw new TwilioApiError(20400, 'Plugin version is already archived', 400);
-      }
-      await this.removeServerlessFiles(build);
-    });
+    const { pluginVersion } = await progress('Archiving Flex Plugin Version', async () => this.archiveOnPluginsAPI());
+    if (pluginVersion.isArchived) {
+      await progress('Cleaning up Twilio Assets', async () => {
+        const build = await this.getBuildIfActive();
+        if (!build) {
+          throw new TwilioApiError(20400, 'Plugin version is already archived', 400);
+        }
+        await this.removeServerlessFiles(build);
+      });
+    }
 
     return pluginVersion;
   }
@@ -61,16 +70,18 @@ export default class FlexPluginsArchivePluginVersion extends ArchiveResource<Plu
    */
   private async archiveOnPluginsAPI() {
     try {
-      return await this.pluginsApiToolkit.archivePluginVersion({
+      const archivedPluginVersion = await this.pluginsApiToolkit.archivePluginVersion({
         name: this._flags.name,
         version: this._flags.version,
       });
+      return { pluginVersion: archivedPluginVersion };
     } catch (e) {
       if (instanceOf(e, TwilioApiError) && e.status === 400) {
-        return this.pluginsApiToolkit.describePluginVersion({
+        const archivedPluginVersion = await this.pluginsApiToolkit.describePluginVersion({
           name: this._flags.name,
           version: this._flags.version,
         });
+        return { pluginVersion: archivedPluginVersion };
       }
 
       throw e;
@@ -82,7 +93,8 @@ export default class FlexPluginsArchivePluginVersion extends ArchiveResource<Plu
    * @param build  the active {@link BuildInstance} to remove the files from
    * @private
    */
-  private async removeServerlessFiles(build: BuildInstance) {
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  public async removeServerlessFiles(build: BuildInstance) {
     const request: BuildListInstanceCreateOptions = {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       functionVersions: build.functionVersions?.map((f) => (f as any).sid),
@@ -122,6 +134,7 @@ export default class FlexPluginsArchivePluginVersion extends ArchiveResource<Plu
    * Returns the {@link BuildInstance} if found. It will also return undefined if the pluginVersion is not part of this build
    * @private
    */
+
   private async getBuildIfActive(): Promise<BuildInstance | undefined> {
     const serviceSid = await this.flexConfigurationClient.getServerlessSid();
     if (!serviceSid) {
@@ -134,13 +147,5 @@ export default class FlexPluginsArchivePluginVersion extends ArchiveResource<Plu
     }
 
     return build;
-  }
-
-  /**
-   * @override
-   */
-  /* istanbul ignore next */
-  get _flags(): OutputFlags<typeof FlexPluginsArchivePluginVersion.flags> {
-    return this.parse(FlexPluginsArchivePluginVersion).flags;
   }
 }

@@ -94,7 +94,7 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
 
   static topicName = 'flex:plugins';
 
-  static BUILDER_VERSION = 5;
+  static BUILDER_VERSION = 6;
 
   /**
    * Getter for the topic
@@ -130,6 +130,9 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
     strict: true,
     runInDirectory: true,
   };
+
+  // @ts-ignore
+  public _flags: FlexPluginFlags;
 
   protected readonly opts: FlexPluginOption;
 
@@ -215,7 +218,7 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
    * Returns the formatted header field
    * @param key
    */
-  /* istanbul ignore next */
+  /* c8 ignore next */
   public static getHeader(key: string): string {
     return toSentenceCase(key);
   }
@@ -224,7 +227,7 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
    * Parses the timestamp
    * @param timestamp
    */
-  /* istanbul ignore next */
+  /* c8 ignore next */
   public static parseDate(timestamp: string): string {
     return dayjs(timestamp).format('MMM DD, YYYY H:mm:ssA');
   }
@@ -234,7 +237,7 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
    * @param key
    * @param value
    */
-  /* istanbul ignore next */
+  /* c8 ignore next */
   public static getValue(key: string, value: string | boolean): string {
     key = key.toLowerCase();
 
@@ -396,6 +399,10 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
     return semver.coerce(dep)?.major || FlexPlugin.DEFAULT_FLEX_UI_VERSION;
   }
 
+  async init(): Promise<void> {
+    this._flags = (await this.parseCommand(FlexPlugin)).flags;
+  }
+
   /**
    * The main run command
    * @override
@@ -405,10 +412,14 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
     this.checkForUpdate();
     addCWDNodeModule();
 
+    if (!this.skipEnvironmentalSetup) {
+      await this.setupEnvironment();
+    }
+
     this.logger.debug(`Using Plugins CLI version ${this.cliPkg.version}`);
     this.logger.debug(`Using Flex Plugins Config File: ${this.pluginsConfigPath}`);
 
-    if (this._flags['clear-terminal']) {
+    if (this._flags?.['clear-terminal']) {
       this._logger.clearTerminal();
     }
 
@@ -435,13 +446,6 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
       password: this.twilioApiClient.password,
     };
 
-    if (this._flags.region) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      pluginServiceOptions.region = this._flags.region as any;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      flexConfigOptions.region = this._flags.region as any;
-    }
-
     const httpClient = new PluginServiceHTTPClient(
       this.twilioApiClient.username,
       this.twilioApiClient.password,
@@ -462,15 +466,10 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
     );
     this._serverlessClient = new ServerlessClient(this.twilioClient.serverless.v1.services, this._logger);
 
-    if (!this.skipEnvironmentalSetup) {
-      await this.setupEnvironment();
-    }
-
     if (!this.isJson) {
       this._logger.notice(`Using profile **${this.currentProfile.id}** (${this.currentProfile.accountSid})`);
       this._logger.newline();
     }
-
     const result = await this.doRun();
     if (result && this.isJson && typeof result === 'object') {
       this._logger.info(JSON.stringify(result));
@@ -495,7 +494,7 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
    * OClif alias for run command
    * @alias for run
    */
-  /* istanbul ignore next */
+  /* c8 ignore next */
   async runCommand(): Promise<void> {
     return this.run();
   }
@@ -505,7 +504,7 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
    * @param scriptName  the script name
    * @param argv        arguments to pass to the script
    */
-  /* istanbul ignore next */
+  /* c8 ignore next */
   async runScript<T>(scriptName: string, argv = this.scriptArgs): Promise<T> {
     const extra = [];
     if (scriptName !== 'test') {
@@ -522,7 +521,7 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
    * @param scriptName  the script to spawn
    * @param argv arguments to pass to the script
    */
-  /* istanbul ignore next */
+  /* c8 ignore next */
   // @ts-ignore
   async spawnScript(scriptName: string, argv = this.scriptArgs): SpawnPromise {
     const scriptPath = require.resolve(`${flexPluginScripts}/dist/scripts/${scriptName}`);
@@ -546,6 +545,8 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
 
     if (this._flags.region) {
       env.setRegion(this._flags.region as any);
+    } else if (this.currentProfile.region) {
+      env.setRegion(this.currentProfile.region);
     }
 
     const shellCmd = ['npm', 'yarn'];
@@ -562,7 +563,7 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
    * @param object    the object to print
    * @param ignoreList  the keys in the object to ignore
    */
-  /* istanbul ignore next */
+  /* c8 ignore next */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   printPretty<O extends { [key: string]: any }>(object: O, ...ignoreList: (keyof O)[]): void {
     Object.keys(object)
@@ -577,7 +578,7 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
    * @param key the key
    * @param value the value
    */
-  /* istanbul ignore next */
+  /* c8 ignore next */
   printHeader(key: string, value?: string | boolean): void {
     if (value === undefined) {
       this._logger.info(`**[[${FlexPlugin.getHeader(key)}:]]**`);
@@ -591,7 +592,7 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
    * @param key
    * @param otherKeys
    */
-  /* istanbul ignore next */
+  /* c8 ignore next */
   printVersion(key: string, ...otherKeys: string[]): void {
     if (otherKeys.length) {
       this._logger.info(`**@@${key}@@** ${otherKeys.join('')}`);
@@ -603,7 +604,7 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
   /**
    * Checks for CLI update
    */
-  /* istanbul ignore next */
+  /* c8 ignore next */
   checkForUpdate(): void {
     const notifier = updateNotifier({ pkg: this.cliPkg, updateCheckInterval: FlexPlugin.checkForUpdateFrequency });
     // template taken from the update-checker
@@ -620,7 +621,7 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
    * @abstract
    * @returns {Promise<void>}
    */
-  /* istanbul ignore next */
+  /* c8 ignore next */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async doRun(): Promise<any | void> {
     throw new NotImplementedError();
@@ -631,14 +632,6 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
    */
   get checkCompatibility(): boolean {
     return false;
-  }
-
-  /**
-   * Abstract method for getting the flags
-   * @protected
-   */
-  get _flags(): FlexPluginFlags {
-    return this.parse(FlexPlugin).flags;
   }
 
   /**
@@ -678,11 +671,11 @@ export default class FlexPlugin extends baseCommands.TwilioClientCommand {
    * The command parse override
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected parse<F, A extends { [name: string]: any }>(
+  protected async parseCommand<F, A extends { [name: string]: any }>(
     options?: Parser.Input<F>,
     argv = this.argv,
-  ): Parser.Output<F, A> {
-    return parser(super.parse)(options, argv);
+  ): Promise<Parser.Output<F, A>> {
+    return parser(super.parse.bind(this))(options, argv);
   }
 
   /**

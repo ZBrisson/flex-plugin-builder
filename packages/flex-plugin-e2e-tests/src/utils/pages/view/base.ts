@@ -1,7 +1,7 @@
 import { ElementHandle, Page } from 'puppeteer';
 
 export abstract class Base {
-  protected static readonly DEFAULT_LOCATE_TIMEOUT = 20000;
+  protected static readonly DEFAULT_LOCATE_TIMEOUT = 60000;
 
   protected static readonly DEFAULT_PAGE_LOAD_TIMEOUT = 60000;
 
@@ -34,6 +34,33 @@ export abstract class Base {
     }
 
     return text;
+  }
+
+  /**
+   * Input value into an element
+   * @param element
+   * @param value
+   */
+  protected async inputText(selector: string, value: string): Promise<void> {
+    const element = await this.elementVisible(selector, selector.substring(1));
+    if (element) {
+      await this.page.type(selector, value);
+    } else {
+      throw new Error('Something went wrong while entering value');
+    }
+  }
+
+  /**
+   * Click on an element
+   * @param element
+   */
+  protected async click(selector: string): Promise<void> {
+    const element = await this.elementVisible(selector, selector.substring(1));
+    if (element) {
+      await this.page.click(selector);
+    } else {
+      throw new Error('Something went wrong while clicking a button');
+    }
   }
 
   /**

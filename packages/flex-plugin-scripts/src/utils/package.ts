@@ -1,6 +1,6 @@
 import { join } from 'path';
 
-import { _require, resolveModulePath } from '@twilio/flex-dev-utils/dist/fs';
+import { resolveModulePath } from '@twilio/flex-dev-utils/dist/fs';
 
 export const FLEX_PACKAGES: string[] = [
   '@twilio/flex-ui',
@@ -9,7 +9,7 @@ export const FLEX_PACKAGES: string[] = [
   '@twilio/flex-dev-utils',
 ];
 
-/* istanbul ignore next */
+/* c8 ignore next */
 export const LIST_OF_PACKAGES: string[] = [...FLEX_PACKAGES, 'react', 'react-dom', 'redux', 'react-redux'];
 
 export interface PackageDetail {
@@ -24,7 +24,7 @@ export interface PackageDetail {
 /**
  * @param packages
  */
-/* istanbul ignore next */
+/* c8 ignore next */
 export const getPackageDetails = (packages: string[]): PackageDetail[] => {
   return packages.map((name) => {
     const detail: PackageDetail = {

@@ -26,6 +26,13 @@ export default class FlexPluginsDescribePluginVersion extends InformationFlexPlu
     }),
   };
 
+  // @ts-ignore
+  public _flags: OutputFlags<typeof FlexPluginsDescribePluginVersion.flags>;
+
+  async init(): Promise<void> {
+    this._flags = (await this.parseCommand(FlexPluginsDescribePluginVersion)).flags;
+  }
+
   /**
    * @override
    */
@@ -37,7 +44,7 @@ export default class FlexPluginsDescribePluginVersion extends InformationFlexPlu
   /**
    * @override
    */
-  /* istanbul ignore next */
+  /* c8 ignore next */
   notFound(): void {
     const { name, version } = this._flags;
     this._logger.info(`!!Plugin **${name}@${version}** was not found.!!`);
@@ -46,7 +53,7 @@ export default class FlexPluginsDescribePluginVersion extends InformationFlexPlu
   /**
    * @override
    */
-  /* istanbul ignore next */
+  /* c8 ignore next */
   print(version: DescribePluginVersion): void {
     this.printHeader('SID', version.sid);
     this.printHeader('Plugin SID', version.plugin.sid);
@@ -59,13 +66,5 @@ export default class FlexPluginsDescribePluginVersion extends InformationFlexPlu
     this.printHeader('Changelog', version.changelog);
     this.printHeader('Private', version.isPrivate);
     this.printHeader('Created', version.dateCreated);
-  }
-
-  /**
-   * Parses the flags passed to this command
-   */
-  /* istanbul ignore next */
-  get _flags(): OutputFlags<typeof FlexPluginsDescribePluginVersion.flags> {
-    return this.parse(FlexPluginsDescribePluginVersion).flags;
   }
 }

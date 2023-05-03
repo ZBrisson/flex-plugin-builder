@@ -74,8 +74,8 @@ export class Logger {
       render: coloredStrings.bold,
     },
     italic: {
-      openChars: '\\*',
-      closeChars: '\\*',
+      openChars: '\\_',
+      closeChars: '\\_',
       render: coloredStrings.italic,
     },
     code: {
@@ -241,7 +241,7 @@ export class Logger {
   /**
    * Clears the terminal either if forced is provided, or if persist_terminal env is not set
    */
-  /* istanbul ignore next */
+  /* c8 ignore next */
   public clearTerminal = (forced = false): void => {
     if (forced || !env.isTerminalPersisted()) {
       process.stdout.write(env.isWin32() ? '\x1B[2J\x1B[0f' : '\x1B[2J\x1B[3J\x1B[H');
@@ -249,7 +249,7 @@ export class Logger {
   };
 
   /**
-   * Provides basic markdown support. Currently supported bold **bold** and italic *italic*
+   * Provides basic markdown support. Currently supported bold **bold** and italic _italic_
    * @param msg
    */
   public markdown = (msg?: string): string | undefined => {

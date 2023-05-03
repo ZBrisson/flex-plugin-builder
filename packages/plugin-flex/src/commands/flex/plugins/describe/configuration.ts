@@ -22,6 +22,13 @@ export default class FlexPluginsDescribeConfiguration extends InformationFlexPlu
     }),
   };
 
+  // @ts-ignore
+  public _flags: OutputFlags<typeof FlexPluginsDescribeConfiguration.flags>;
+
+  async init(): Promise<void> {
+    this._flags = (await this.parseCommand(FlexPluginsDescribeConfiguration)).flags;
+  }
+
   /**
    * @override
    */
@@ -32,7 +39,7 @@ export default class FlexPluginsDescribeConfiguration extends InformationFlexPlu
   /**
    * @override
    */
-  /* istanbul ignore next */
+  /* c8 ignore next */
   notFound(): void {
     this._logger.info(`!!Configuration **${this._flags.sid}** was not found.!!`);
   }
@@ -40,7 +47,7 @@ export default class FlexPluginsDescribeConfiguration extends InformationFlexPlu
   /**
    * @override
    */
-  /* istanbul ignore next */
+  /* c8 ignore next */
   print(configuration: DescribeConfiguration): void {
     this.printHeader('SID', configuration.sid);
     this.printHeader('Name', configuration.name);
@@ -55,13 +62,5 @@ export default class FlexPluginsDescribeConfiguration extends InformationFlexPlu
       this.printPretty(plugin, 'version', 'name');
       this._logger.newline();
     });
-  }
-
-  /**
-   * Parses the flags passed to this command
-   */
-  /* istanbul ignore next */
-  get _flags(): OutputFlags<typeof FlexPluginsDescribeConfiguration.flags> {
-    return this.parse(FlexPluginsDescribeConfiguration).flags;
   }
 }

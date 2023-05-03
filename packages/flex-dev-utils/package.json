@@ -1,6 +1,6 @@
 {
   "name": "@twilio/flex-dev-utils",
-  "version": "5.1.1",
+  "version": "6.1.1",
   "description": "Common development utility for creating a Flex plugin",
   "keywords": [
     "flex",
@@ -34,8 +34,8 @@
   },
   "dependencies": {
     "@k88/pipe-compose": "^2.5.0",
-    "@twilio/flex-plugins-utils-env": "5.1.1",
-    "@twilio/flex-plugins-utils-exception": "5.1.1",
+    "@twilio/flex-plugins-utils-env": "6.1.1",
+    "@twilio/flex-plugins-utils-exception": "6.1.1",
     "address": "^1.1.2",
     "app-module-path": "^2.2.0",
     "axios": "^0.24.0",
@@ -47,7 +47,9 @@
     "copy-template-dir": "^1.4.0",
     "execa": "^5.1.1",
     "find-in-files": "^0.5.0",
+    "form-data": "^4.0.0",
     "globby": "^11.0.4",
+    "https-proxy-agent": "^5.0.0",
     "inquirer": "7.3.3",
     "lodash": "^4.17.21",
     "log-symbols": "^4.1.0",
@@ -56,13 +58,14 @@
     "open": "^8.2.1",
     "ora": "^5.4.1",
     "package-json": "^6.5.0",
-    "qs": "^6.10.1",
+    "qs": "^6.10.3",
     "rimraf": "^3.0.2",
     "semver": "^7.3.5",
     "string-width": "^4.2.3",
     "table": "^6.7.3",
     "update-notifier": "^5.1.0",
     "url": "^0.11.0",
+    "url-join": "^4.0.1",
     "util": "^0.12.4",
     "wrap-ansi": "^4.0.0"
   },
@@ -79,6 +82,7 @@
     "@types/string-width": "^4.0.1",
     "@types/table": "^6.3.2",
     "@types/update-notifier": "^5.1.0",
+    "@types/url-join": "^4.0.1",
     "@types/wrap-ansi": "^3.0.0",
     "axios-mock-adapter": "^1.20.0"
   },

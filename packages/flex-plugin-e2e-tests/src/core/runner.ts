@@ -1,11 +1,17 @@
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, @typescript-eslint/prefer-for-of, global-require */
-import { existsSync, mkdirSync, rmdirSync } from 'fs';
+import * as fs from 'fs';
 
 import packageJson from 'package-json';
 import { logger } from '@twilio/flex-dev-utils';
 
 import { homeDir, TestParams, TestScenario, TestSuite, testSuites } from '.';
 import { api } from '../utils';
+
+/**
+ * RUN_TS is used to determine whether the test scenarios need
+ * to be filtered by isTS property value
+ */
+const RUN_TS: string | undefined = process.env.TS;
 
 /**
  * Main method for running a test
@@ -75,10 +81,10 @@ const beforeAll = async (testParams: TestParams) => {
  * Runs before the test
  */
 const beforeEach = async () => {
-  if (existsSync(homeDir)) {
-    rmdirSync(homeDir, { recursive: true });
+  if (fs.existsSync(homeDir)) {
+    await fs.promises.rm(homeDir, { recursive: true, force: true });
   }
-  mkdirSync(homeDir);
+  await fs.promises.mkdir(homeDir);
 
   await api.cleanup();
 };
@@ -127,7 +133,15 @@ const runSelected = async (testParams: TestParams): Promise<void> => {
  */
 const runner = async (testParams: TestParams, testScenarios: Partial<TestScenario>[]): Promise<void> => {
   const _testParams = { ...testParams };
-  const _testScenario = [...testScenarios];
+  let _testScenario;
+
+  if (RUN_TS) {
+    // Required for running e2e on windows in CircleCi pipeline
+    _testScenario = testScenarios.filter((s) => s.isTS === Boolean(Number(RUN_TS)));
+  } else {
+    _testScenario = [...testScenarios];
+  }
+
   await beforeAll(_testParams);
 
   if (!process.argv.includes('--step')) {
